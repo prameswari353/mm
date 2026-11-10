@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stok Etnikom - Inventaris</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .gold-shield-grad {
+      background: radial-gradient(circle at 50% 30%, #fef08a 0%, #f59e0b 50%, #b45309 100%);
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
+
+  <!-- ==================== TAMPILAN LOGIN ==================== -->
+  <div id="loginView" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-amber-200">
+      <div class="text-center mb-6">
+        <!-- Logo Shield Badge Etnikom -->
+        <div class="inline-flex items-center justify-center w-24 h-24 mb-3 rounded-2xl gold-shield-grad p-2 shadow-lg border-2 border-amber-300">
+          <svg viewBox="0 0 100 100" class="w-full h-full text-slate-900">
+            <path d="M50 8 L85 22 L85 60 C85 78 50 94 50 94 C50 94 15 78 15 60 L15 22 Z" fill="#b45309" stroke="#fef08a" stroke-width="2" />
+            <path d="M50 14 L78 26 L78 58 C78 72 50 86 50 86 C50 86 22 72 22 58 L22 26 Z" fill="#fbbf24" />
+            <!-- Simbol Tambang / Loop -->
+            <circle cx="50" cy="42" r="14" fill="none" stroke="#78350f" stroke-width="5" stroke-dasharray="3 2" />
+            <text x="50" y="66" font-size="12" font-weight="900" fill="#451a03" text-anchor="middle">etnikom</text>
+            <text x="50" y="74" font-size="6" font-style="italic" fill="#78350f" text-anchor="middle">Since 1990</text>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-black tracking-tight text-amber-900">STOK ETNIKOM</h1>
+        <p class="text-xs font-medium text-slate-500">Sistem Kelola Inventaris & Gramatur</p>
+      </div>
+
+      <form id="formLogin" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Username</label>
+          <input type="text" id="loginUser" required placeholder="admin" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500 outline-none border-slate-300 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Password</label>
+          <input type="password" id="loginPass" required placeholder="••••••••" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500 outline-none border-slate-300 text-sm">
+        </div>
+        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-lg shadow-md transition duration-150 text-sm">
+          Masuk ke Aplikasi
+        </button>
+      </form>
+      <div class="mt-4 text-center text-xs text-slate-400">
+        Default: <code>admin</code> / <code>admin123</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAMPILAN DASHBOARD ==================== -->
+  <div id="mainView" class="hidden min-h-screen flex flex-col md:flex-row">
+    
+    <!-- Sidebar -->
+    <aside class="w-full md:w-64 bg-slate-900 text-slate-200 flex flex-col justify-between shadow-xl">
+      <div>
+        <div class="p-5 flex items-center gap-3 border-b border-slate-800">
+          <div class="w-10 h-10 rounded-lg gold-shield-grad p-1.5 flex items-center justify-center">
+            <i data-lucide="shield" class="text-amber-950 w-6 h-6"></i>
+          </div>
+          <div>
+            <h2 class="font-extrabold text-base text-amber-400 tracking-wide leading-tight">STOK ETNIKOM</h2>
+            <span class="text-[11px] text-slate-400">Inventory Hub</span>
+          </div>
+        </div>
+
+        <nav class="p-4 space-y-1">
+          <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold bg-amber-600 text-white">
+            <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+          </button>
+          <button onclick="switchTab('barang')" id="nav-barang" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800 hover:text-white">
+            <i data-lucide="boxes" class="w-5 h-5"></i> Daftar & Gram Barang
+          </button>
+          <button onclick="switchTab('masuk')" id="nav-masuk" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800 hover:text-white">
+            <i data-lucide="arrow-down-to-dot" class="w-5 h-5 text-emerald-400"></i> Barang Masuk
+          </button>
+          <button onclick="switchTab('keluar')" id="nav-keluar" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800 hover:text-white">
+            <i data-lucide="arrow-up-from-dot" class="w-5 h-5 text-rose-400"></i> Barang Keluar
+          </button>
+        </nav>
+      </div>
+
+      <div class="p-4 border-t border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-xs font-bold text-white" id="userInitial">A</div>
+          <div>
+            <p class="text-sm font-semibold text-white leading-none" id="userNameLabel">Admin</p>
+            <span class="text-xs text-amber-400" id="userRoleLabel">Admin</span>
+          </div>
+        </div>
+        <button onclick="handleLogout()" title="Keluar" class="text-slate-400 hover:text-rose-400 p-2 rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="log-out" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Konten Layar -->
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+
+      <!-- TAB 1: DASHBOARD -->
+      <section id="tab-dashboard" class="space-y-6">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">Dashboard Inventaris</h1>
+            <p class="text-sm text-slate-500">Monitoring volume dan aktivitas stok barang Etnikom</p>
+          </div>
+          <button onclick="loadDashboard()" class="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Segarkan Data
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-slate-500 uppercase">Katalog Barang</p>
+              <h3 id="statTotalItems" class="text-2xl font-black mt-1">0</h3>
+            </div>
+            <div class="p-3 bg-amber-100 text-amber-600 rounded-xl"><i data-lucide="package"></i></div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-slate-500 uppercase">Total Sisa Stok</p>
+              <h3 id="statTotalStock" class="text-2xl font-black mt-1">0</h3>
+            </div>
+            <div class="p-3 bg-blue-100 text-blue-600 rounded-xl"><i data-lucide="layers"></i></div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-slate-500 uppercase">Total Masuk</p>
+              <h3 id="statTotalMasuk" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
+            </div>
+            <div class="p-3 bg-emerald-100 text-emerald-600 rounded-xl"><i data-lucide="arrow-down-circle"></i></div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-slate-500 uppercase">Total Keluar</p>
+              <h3 id="statTotalKeluar" class="text-2xl font-black text-rose-600 mt-1">0</h3>
+            </div>
+            <div class="p-3 bg-rose-100 text-rose-600 rounded-xl"><i data-lucide="arrow-up-circle"></i></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 mb-3">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-500"></i> Peringatan Stok Kritis (≤ 5)
+          </h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-50 text-slate-600 border-b">
+                <tr>
+                  <th class="p-3 font-semibold">Kode</th>
+                  <th class="p-3 font-semibold">Nama Barang</th>
+                  <th class="p-3 font-semibold">Gram</th>
+                  <th class="p-3 font-semibold">Satuan</th>
+                  <th class="p-3 font-semibold">Sisa Stok</th>
+                </tr>
+              </thead>
+              <tbody id="tblLowStock" class="divide-y divide-slate-100">
+                <tr><td colspan="5" class="p-4 text-center text-slate-400">Tidak ada stok kritis</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: DAFTAR BARANG -->
+      <section id="tab-barang" class="hidden space-y-6">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">Katalog Barang & Gramatur</h1>
+            <p class="text-sm text-slate-500">Kelola rincian produk, gramatur, dan unit stok</p>
+          </div>
+          <button onclick="openModalBarang()" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-sm flex items-center gap-2 shadow">
+            <i data-lucide="plus" class="w-4 h-4"></i> Tambah Barang Baru
+          </button>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+          <input type="text" id="searchBarang" oninput="filterBarang()" placeholder="Cari Kode atau Nama Barang..." class="mb-4 w-full md:w-80 px-4 py-2 border rounded-lg text-sm outline-none border-slate-300 focus:ring-2 focus:ring-amber-500">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-50 text-slate-600 border-b">
+                <tr>
+                  <th class="p-3 font-semibold">Kode Barang</th>
+                  <th class="p-3 font-semibold">Nama Barang</th>
+                  <th class="p-3 font-semibold">Gram (g)</th>
+                  <th class="p-3 font-semibold">Satuan</th>
+                  <th class="p-3 font-semibold">Stok Awal</th>
+                  <th class="p-3 font-semibold">Stok Saat Ini</th>
+                </tr>
+              </thead>
+              <tbody id="tblMasterBarang" class="divide-y divide-slate-100">
+                <tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data barang...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: BARANG MASUK -->
+      <section id="tab-masuk" class="hidden space-y-6">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900">Penerimaan Barang Masuk</h1>
+          <p class="text-sm text-slate-500">Pencatatan penambahan stok barang</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-base mb-4 text-slate-800">Form Masuk</h3>
+            <form id="formMasuk" onsubmit="submitBarangMasuk(event)" class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Barang</label>
+                <select id="masukKode" required class="w-full p-2 border rounded-lg text-sm border-slate-300 outline-none">
+                  <option value="">-- Pilih Barang --</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Jumlah Masuk</label>
+                <input type="number" id="masukJumlah" min="1" required class="w-full p-2 border rounded-lg text-sm border-slate-300 outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Keterangan</label>
+                <textarea id="masukKet" rows="2" class="w-full p-2 border rounded-lg text-sm border-slate-300 outline-none"></textarea>
+              </div>
+              <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-sm">
+                Catat Barang Masuk
+              </button>
+            </form>
+          </div>
+
+          <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-base mb-4 text-slate-800">Riwayat Masuk Terkini</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 border-b text-slate-600">
+                  <tr>
+                    <th class="p-2 font-semibold">Tanggal</th>
+                    <th class="p-2 font-semibold">Kode</th>
+                    <th class="p-2 font-semibold">Nama</th>
+                    <th class="p-2 font-semibold">Qty</th>
+                    <th class="p-2 font-semibold">Petugas</th>
+                  </tr>
+                </thead>
+                <tbody id="tblRiwayatMasuk" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: BARANG KELUAR -->
+      <section id="tab-keluar" class="hidden space-y-6">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900">Pengeluaran Barang Keluar</h1>
+          <p class="text-sm text-slate-500">Pencatatan mutasi keluar atau distribusi stok</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-base mb-4 text-slate-800">Form Keluar</h3>
+            <form id="formKeluar" onsubmit="submitBarangKeluar(event)" class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Barang</label>
+                <select id="keluarKode" required onchange="updateSisaStokInfo()" class="w-full p-2 border rounded-lg text-sm border-slate-300 outline-none">
+                  <option value="">-- Pilih Barang --</option>
+                </select>
+                <p id="infoSisaStok" class="text-xs text-amber-600 font-semibold mt-1"></p>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Jumlah Keluar</label>
+                <input type="number" id="keluarJumlah" min="1" required class="w-full p-2 border rounded-lg text-sm border-slate-300 outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Keterangan</label>
+                <textarea id="keluarKet" rows="2" class="w-full p-2 border rounded-lg text-sm border-slate-300 outline-none"></textarea>
+              </div>
+              <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2 rounded-lg font-bold text-sm">
+                Catat Barang Keluar
+              </button>
+            </form>
+          </div>
+
+          <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-base mb-4 text-slate-800">Riwayat Keluar Terkini</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 border-b text-slate-600">
+                  <tr>
+                    <th class="p-2 font-semibold">Tanggal</th>
+                    <th class="p-2 font-semibold">Kode</th>
+                    <th class="p-2 font-semibold">Nama</th>
+                    <th class="p-2 font-semibold">Qty</th>
+                    <th class="p-2 font-semibold">Petugas</th>
+                  </tr>
+                </thead>
+                <tbody id="tblRiwayatKeluar" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Modal Tambah Master Barang -->
+  <div id="modalBarang" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+      <h3 class="text-lg font-bold text-slate-900 mb-4">Tambah Master Barang</h3>
+      <form id="formMasterBarang" onsubmit="submitMasterBarang(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Kode Barang</label>
+          <input type="text" id="mKode" required placeholder="ETN-003" class="w-full p-2 border rounded-lg text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Nama Barang</label>
+          <input type="text" id="mNama" required placeholder="Nama komponen / barang" class="w-full p-2 border rounded-lg text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Gram Barang (g)</label>
+            <input type="number" id="mGram" step="0.01" required placeholder="150" class="w-full p-2 border rounded-lg text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Satuan</label>
+            <input type="text" id="mSatuan" required placeholder="Pcs / Roll" class="w-full p-2 border rounded-lg text-sm">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Stok Awal</label>
+          <input type="number" id="mStokAwal" min="0" required placeholder="0" class="w-full p-2 border rounded-lg text-sm">
+        </div>
+        <div class="flex justify-end gap-2 pt-4">
+          <button type="button" onclick="closeModalBarang()" class="px-4 py-2 text-slate-600 bg-slate-100 rounded-lg text-sm font-semibold">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold shadow">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let activeUser = null;
+    let masterData = [];
+
+    lucide.createIcons();
+
+    // Login Handler
+    function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('loginUser').value;
+      const p = document.getElementById('loginPass').value;
+      
+      Swal.fire({ title: 'Otentikasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+      google.script.run
+        .withSuccessHandler((res) => {
+          Swal.close();
+          if (res.success) {
+            activeUser = res.user;
+            document.getElementById('userNameLabel').innerText = activeUser.name;
+            document.getElementById('userRoleLabel').innerText = activeUser.role;
+            document.getElementById('userInitial').innerText = activeUser.name.charAt(0).toUpperCase();
+
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('mainView').classList.remove('hidden');
+
+            loadDashboard();
+            loadMasterBarang();
+            loadRiwayat();
+          } else {
+            Swal.fire('Gagal', res.message, 'error');
+          }
+        })
+        .withFailureHandler((err) => {
+          Swal.close();
+          Swal.fire('Error Server', err.toString(), 'error');
+        })
+        .verifyLogin(u, p);
+    }
+
+    function handleLogout() {
+      activeUser = null;
+      document.getElementById('mainView').classList.add('hidden');
+      document.getElementById('loginView').classList.remove('hidden');
+      document.getElementById('loginUser').value = '';
+      document.getElementById('loginPass').value = '';
+    }
+
+    // Switch Tab Menu
+    function switchTab(tabId) {
+      ['dashboard', 'barang', 'masuk', 'keluar'].forEach(t => {
+        document.getElementById('tab-' + t).classList.add('hidden');
+        document.getElementById('nav-' + t).className = 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800 hover:text-white';
+      });
+
+      document.getElementById('tab-' + tabId).classList.remove('hidden');
+      document.getElementById('nav-' + tabId).className = 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold bg-amber-600 text-white';
+
+      if (tabId === 'dashboard') loadDashboard();
+      if (tabId === 'barang') loadMasterBarang();
+      if (tabId === 'masuk' || tabId === 'keluar') {
+        populateDropdowns();
+        loadRiwayat();
+      }
+    }
+
+    // Load Metrics
+    function loadDashboard() {
+      google.script.run.withSuccessHandler((data) => {
+        document.getElementById('statTotalItems').innerText = data.totalItems;
+        document.getElementById('statTotalStock').innerText = data.totalStock;
+        document.getElementById('statTotalMasuk').innerText = data.totalMasuk;
+        document.getElementById('statTotalKeluar').innerText = data.totalKeluar;
+
+        const tbl = document.getElementById('tblLowStock');
+        if (data.lowStock.length === 0) {
+          tbl.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Semua stok aman (> 5)</td></tr>`;
+        } else {
+          tbl.innerHTML = data.lowStock.map(i => `
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 font-semibold text-amber-800">${i.kode}</td>
+              <td class="p-3">${i.nama}</td>
+              <td class="p-3">${i.gram} g</td>
+              <td class="p-3">${i.satuan}</td>
+              <td class="p-3 font-bold text-rose-600">${i.stok}</td>
+            </tr>
+          `).join('');
+        }
+      }).getDashboardData();
+    }
+
+    // Master Barang CRUD
+    function loadMasterBarang() {
+      google.script.run.withSuccessHandler((data) => {
+        masterData = data;
+        renderMasterTable(masterData);
+        populateDropdowns();
+      }).getMasterBarang();
+    }
+
+    function renderMasterTable(list) {
+      const tbody = document.getElementById('tblMasterBarang');
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Tidak ada barang terdaftar</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = list.map(item => `
+        <tr class="hover:bg-slate-50">
+          <td class="p-3 font-semibold text-amber-800">${item.kode}</td>
+          <td class="p-3 font-medium">${item.nama}</td>
+          <td class="p-3">${item.gram} g</td>
+          <td class="p-3">${item.satuan}</td>
+          <td class="p-3 text-slate-500">${item.stokAwal}</td>
+          <td class="p-3 font-bold ${item.stokSaatIni <= 5 ? 'text-rose-600' : 'text-slate-900'}">${item.stokSaatIni}</td>
+        </tr>
+      `).join('');
+    }
+
+    function filterBarang() {
+      const q = document.getElementById('searchBarang').value.toLowerCase();
+      const filtered = masterData.filter(d => 
+        d.kode.toLowerCase().includes(q) || d.nama.toLowerCase().includes(q)
+      );
+      renderMasterTable(filtered);
+    }
+
+    function openModalBarang() { document.getElementById('modalBarang').classList.remove('hidden'); }
+    function closeModalBarang() { document.getElementById('modalBarang').classList.add('hidden'); }
+
+    function submitMasterBarang(e) {
+      e.preventDefault();
+      const payload = {
+        kode: document.getElementById('mKode').value,
+        nama: document.getElementById('mNama').value,
+        gram: document.getElementById('mGram').value,
+        satuan: document.getElementById('mSatuan').value,
+        stokAwal: document.getElementById('mStokAwal').value
+      };
+
+      Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      google.script.run.withSuccessHandler((res) => {
+        Swal.close();
+        if (res.success) {
+          Swal.fire('Berhasil', res.message, 'success');
+          document.getElementById('formMasterBarang').reset();
+          closeModalBarang();
+          loadMasterBarang();
+        } else {
+          Swal.fire('Gagal', res.message, 'error');
+        }
+      }).tambahMasterBarang(payload);
+    }
+
+    function populateDropdowns() {
+      const opts = `<option value="">-- Pilih Barang --</option>` + masterData.map(b => 
+        `<option value="${b.kode}">${b.kode} - ${b.nama} (${b.gram}g) [Sisa: ${b.stokSaatIni} ${b.satuan}]</option>`
+      ).join('');
+
+      document.getElementById('masukKode').innerHTML = opts;
+      document.getElementById('keluarKode').innerHTML = opts;
+    }
+
+    function updateSisaStokInfo() {
+      const k = document.getElementById('keluarKode').value;
+      const b = masterData.find(item => item.kode === k);
+      const info = document.getElementById('infoSisaStok');
+      info.innerText = b ? `Stok tersedia: ${b.stokSaatIni} ${b.satuan}` : '';
+    }
+
+    // Transaksi Masuk & Keluar
+    function submitBarangMasuk(e) {
+      e.preventDefault();
+      const payload = {
+        kode: document.getElementById('masukKode').value,
+        jumlah: document.getElementById('masukJumlah').value,
+        keterangan: document.getElementById('masukKet').value,
+        petugas: activeUser.name
+      };
+
+      Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      google.script.run.withSuccessHandler((res) => {
+        Swal.close();
+        if (res.success) {
+          Swal.fire('Berhasil', res.message, 'success');
+          document.getElementById('formMasuk').reset();
+          loadMasterBarang();
+          loadRiwayat();
+        } else {
+          Swal.fire('Gagal', res.message, 'error');
+        }
+      }).catatBarangMasuk(payload);
+    }
+
+    function submitBarangKeluar(e) {
+      e.preventDefault();
+      const payload = {
+        kode: document.getElementById('keluarKode').value,
+        jumlah: document.getElementById('keluarJumlah').value,
+        keterangan: document.getElementById('keluarKet').value,
+        petugas: activeUser.name
+      };
+
+      Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      google.script.run.withSuccessHandler((res) => {
+        Swal.close();
+        if (res.success) {
+          Swal.fire('Berhasil', res.message, 'success');
+          document.getElementById('formKeluar').reset();
+          document.getElementById('infoSisaStok').innerText = '';
+          loadMasterBarang();
+          loadRiwayat();
+        } else {
+          Swal.fire('Gagal', res.message, 'error');
+        }
+      }).catatBarangKeluar(payload);
+    }
+
+    // Riwayat Tabel
+    function loadRiwayat() {
+      google.script.run.withSuccessHandler((data) => {
+        const tbodyIn = document.getElementById('tblRiwayatMasuk');
+        tbodyIn.innerHTML = data.masuk.length === 0 
+          ? `<tr><td colspan="5" class="p-3 text-center text-slate-400">Belum ada data masuk</td></tr>`
+          : data.masuk.map(r => `
+            <tr>
+              <td class="p-2">${r[1].toString().slice(0,10)}</td>
+              <td class="p-2 font-medium">${r[2]}</td>
+              <td class="p-2">${r[3]}</td>
+              <td class="p-2 text-emerald-600 font-bold">+${r[4]} ${r[5]}</td>
+              <td class="p-2 text-xs text-slate-500">${r[7]}</td>
+            </tr>
+          `).join('');
+
+        const tbodyOut = document.getElementById('tblRiwayatKeluar');
+        tbodyOut.innerHTML = data.keluar.length === 0 
+          ? `<tr><td colspan="5" class="p-3 text-center text-slate-400">Belum ada data keluar</td></tr>`
+          : data.keluar.map(r => `
+            <tr>
+              <td class="p-2">${r[1].toString().slice(0,10)}</td>
+              <td class="p-2 font-medium">${r[2]}</td>
+              <td class="p-2">${r[3]}</td>
+              <td class="p-2 text-rose-600 font-bold">-${r[4]} ${r[5]}</td>
+              <td class="p-2 text-xs text-slate-500">${r[7]}</td>
+            </tr>
+          `).join('');
+      }).getRiwayatTransaksi();
+    }
+  </script>
+</body>
+</html> 
